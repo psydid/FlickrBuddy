@@ -1,4 +1,6 @@
-package metricyard.flickrbuddy.flickrest;
+package flickrest;
+
+
 
 import java.util.ArrayList;
 

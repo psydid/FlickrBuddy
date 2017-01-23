@@ -1,13 +1,11 @@
-package metricyard.flickrbuddy.main;
+package main;
+
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.URL;
-
-import metricyard.flickrbuddy.flickrest.FlickrCollection;
-import metricyard.flickrbuddy.flickrest.FlickrPhoto;
-import metricyard.flickrbuddy.flickrest.FlickrSet;
+import flickrest.*;
 
 public class FlickrBuddyDiskService {
 

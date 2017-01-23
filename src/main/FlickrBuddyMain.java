@@ -1,20 +1,16 @@
-package metricyard.flickrbuddy.main;
+package main;
+
+
 import java.io.BufferedReader;
+
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.scribe.model.Token;
+import flickrest.*;
 
-import metricyard.flickrbuddy.flickrest.FlickrCollection;
-import metricyard.flickrbuddy.flickrest.FlickrCollectionList;
-import metricyard.flickrbuddy.flickrest.FlickrPhoto;
-import metricyard.flickrbuddy.flickrest.FlickrPhotoList;
-import metricyard.flickrbuddy.flickrest.FlickrPhotoSize;
-import metricyard.flickrbuddy.flickrest.FlickrPhotoSizeList;
-import metricyard.flickrbuddy.flickrest.FlickrRestService;
-import metricyard.flickrbuddy.flickrest.FlickrSet;
 
 public class FlickrBuddyMain {
 
@@ -29,6 +25,7 @@ public class FlickrBuddyMain {
 		
 		if(args.length < 1) {
 			System.out.println("usage: FlickrBuddy <local root for photo stash>");
+			return;
 		}
 		
 		diskService = new FlickrBuddyDiskService(args[0]);

@@ -1,4 +1,4 @@
-package metricyard.flickrbuddy.flickrest;
+package flickrest;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;

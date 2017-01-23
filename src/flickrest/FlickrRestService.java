@@ -1,4 +1,4 @@
-package metricyard.flickrbuddy.flickrest;
+package flickrest;
 
 import java.io.ByteArrayInputStream;
 import java.util.HashMap;
