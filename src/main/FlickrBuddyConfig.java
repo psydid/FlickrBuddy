@@ -14,6 +14,7 @@ import org.scribe.model.Token;
 public class FlickrBuddyConfig {
 		
 	private static FlickrBuddyConfig _INSTANCE;
+	private String dropboxAuthFileName = "dropboxAuth";
 	
 	public static FlickrBuddyConfig get() {
 		if(_INSTANCE == null) {
@@ -55,5 +56,9 @@ public class FlickrBuddyConfig {
 				output.close();
 			}
 		}
+	}
+	
+	public String getDropboxAuthFileName() {
+		return dropboxAuthFileName;
 	}
 }

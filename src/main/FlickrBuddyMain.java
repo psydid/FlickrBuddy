@@ -9,14 +9,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.scribe.model.Token;
+
+import droprest.DropboxRestService;
 import flickrest.*;
 
 
 public class FlickrBuddyMain {
 
 	private static FlickrRestService service;
-	private static FlickrBuddyDiskService diskService;
+	private static FlickrBuddySinkService sinkService;
 	private static boolean fastMode = true;
+	
+	private static DropboxRestService dropboxService;
 	
 	/**
 	 * @param args
@@ -28,7 +32,15 @@ public class FlickrBuddyMain {
 			return;
 		}
 		
-		diskService = new FlickrBuddyDiskService(args[0]);
+		
+		dropboxService = DropboxRestService.get();
+		dropboxService.authorize(FlickrBuddyConfig.get().getDropboxAuthFileName());
+		//dropboxService.test();
+
+		//sinkService = new FlickrBuddyDiskService(args[0]);
+		sinkService = new FlickrBuddyDropboxService(dropboxService);
+
+		
 		service = FlickrRestService.get();
 		Token accessToken = FlickrBuddyConfig.get().getAccessToken();
 		
@@ -62,7 +74,7 @@ public class FlickrBuddyMain {
 		ArrayList<FlickrCollection> orderedList = new ArrayList<FlickrCollection>();
 		ArrayList<FlickrCollection> onDiskList = new ArrayList<FlickrCollection>();		
 		for(FlickrCollection coll : colls.getCollections()) {
-			if(diskService.checkForCollection(coll)) {
+			if(sinkService.checkForCollection(coll)) {
 				onDiskList.add(coll);
 			} else {
 				orderedList.add(coll);
@@ -83,7 +95,7 @@ public class FlickrBuddyMain {
 		ArrayList<FlickrSet> onDiskList = new ArrayList<FlickrSet>();
 		
 		for(FlickrSet set: coll.getSets()) {
-			if(diskService.checkForSet(coll, set)) {
+			if(sinkService.checkForSet(coll, set)) {
 				onDiskList.add(set);
 			} else {
 				orderedList.add(set);
@@ -100,19 +112,19 @@ public class FlickrBuddyMain {
 	private static void syncSet(FlickrCollection coll, FlickrSet set) throws Exception {
 		FlickrPhotoList photoList = service.getPhotosInSet(set);
 		
-		if(FlickrBuddyMain.fastMode && diskService.checkForCollection(coll) && diskService.checkForSet(coll, set)) {
-			if(photoList.getPhotos().size() <= diskService.countFilesInSet(coll, set)) {
+		if(FlickrBuddyMain.fastMode && sinkService.checkForCollection(coll) && sinkService.checkForSet(coll, set)) {
+			if(photoList.getPhotos().size() <= sinkService.countFilesInSet(coll, set)) {
 				System.out.println(String.format("Collection %s,  Set %s already synced", coll.getTitle(), set.getTitle()));
 				return;
 			} else {
-				System.out.println(String.format("Collection %s,  Set %s has %d photos on service, %d on disk", coll.getTitle(), set.getTitle(), photoList.getPhotos().size(), diskService.countFilesInSet(coll, set)));				
+				System.out.println(String.format("Collection %s,  Set %s has %d photos on service, %d on disk", coll.getTitle(), set.getTitle(), photoList.getPhotos().size(), sinkService.countFilesInSet(coll, set)));				
 			}
 		}
 		
 		HashMap<String, Integer> photoNameCounts = new HashMap<String, Integer>();
 		
 		for(FlickrPhoto photo : photoList.getPhotos()) {
-			String name = photo.getTitle();
+			String name = photo.getTitle().toLowerCase();
 			if(!photoNameCounts.containsKey(name)) {
 				photoNameCounts.put(name, 1);
 			} else {
@@ -128,7 +140,7 @@ public class FlickrBuddyMain {
 			FlickrPhotoSizeList sizeList = service.getPhotoSizes(photo);
 			for(FlickrPhotoSize size : sizeList.getSizes()) {
 				if(size.getLabel().equals("Original")) {
-					diskService.syncPhoto(coll, set, photo, size.getSource());
+					sinkService.syncPhoto(coll, set, photo, size.getSource());
 				}
 			}
 		}
