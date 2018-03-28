@@ -26,13 +26,13 @@ public class FlickrBuddyMain {
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception {
-		
+		/*
 		if(args.length < 1) {
 			System.out.println("usage: FlickrBuddy <local root for photo stash>");
 			return;
 		}
 		
-		
+		*/
 		dropboxService = DropboxRestService.get();
 		dropboxService.authorize(FlickrBuddyConfig.get().getDropboxAuthFileName());
 		//dropboxService.test();
