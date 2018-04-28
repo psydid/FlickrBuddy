@@ -26,19 +26,24 @@ public class FlickrBuddyMain {
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception {
-		/*
+		
 		if(args.length < 1) {
-			System.out.println("usage: FlickrBuddy <local root for photo stash>");
+			printUsage();
 			return;
 		}
 		
-		*/
-		dropboxService = DropboxRestService.get();
-		dropboxService.authorize(FlickrBuddyConfig.get().getDropboxAuthFileName());
-		//dropboxService.test();
-
-		//sinkService = new FlickrBuddyDiskService(args[0]);
-		sinkService = new FlickrBuddyDropboxService(dropboxService);
+		
+		if(args[0].equals("-f") && args.length == 2) {
+			sinkService = new FlickrBuddyDiskService(args[1]);	
+		}
+		else if(args[0].equals("-d") && args.length == 1) {
+			dropboxService = DropboxRestService.get();
+			dropboxService.authorize(FlickrBuddyConfig.get().getDropboxAuthFileName());
+			sinkService = new FlickrBuddyDropboxService(dropboxService);
+		} else {
+			printUsage();
+			return;
+		}
 
 		
 		service = FlickrRestService.get();
@@ -144,5 +149,9 @@ public class FlickrBuddyMain {
 				}
 			}
 		}
+	}
+	
+	private static void printUsage() {
+		System.out.println("usage:\n For local filesystem sync: FlickrBuddy -f <local root>\n For dropbox sync: FlickrBuddy -d");
 	}
 }
