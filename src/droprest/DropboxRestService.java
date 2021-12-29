@@ -19,9 +19,9 @@ public class DropboxRestService {
 	
 	private static DropboxRestService _INSTANCE;
 	
-	private static String API_KEY = "zukmd7078ly597m";
-	private static String API_SECRET = "ol4ffuon5z07izy";
-	
+	private static String API_KEY= "vin77b1qx7cgpf7";
+	private static String API_SECRET = "w5mfxcvm9g4t0i4";
+		
 	private DbxClientV2 client;
 	
 	public DropboxRestService() {

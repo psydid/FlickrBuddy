@@ -1,6 +1,11 @@
 package flickrest;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -24,8 +29,8 @@ import org.w3c.dom.Node;
 
 public class FlickrRestService {
 
-	public static String API_KEY = "bd8fc179e2a4c2283e6ac7d4c0228dab";
-	public static String API_SECRET = "ae91a20a59b837bc";
+	public String API_KEY;
+	public String API_SECRET;
 	public static String REST_ENDPOINT = "https://api.flickr.com/services/rest/";
 	
 	private OAuthService oAuthService;
@@ -34,7 +39,21 @@ public class FlickrRestService {
 	private Token accessToken;
 	private Token requestToken;
 	
-	public FlickrRestService() {
+	public FlickrRestService()  throws FileNotFoundException, IOException {
+		
+		FileInputStream cfgFile = new FileInputStream("FlickrAppSecrets.cfg");
+		
+		BufferedReader cfgReader = new BufferedReader(new InputStreamReader(cfgFile));
+		
+		try {
+			API_KEY = cfgReader.readLine();
+			API_SECRET = cfgReader.readLine();
+		} finally {
+			cfgReader.close();
+		}
+		
+		
+		
 		
 		oAuthService = new ServiceBuilder().
 				apiKey(API_KEY).
@@ -63,10 +82,21 @@ public class FlickrRestService {
 	}
 	
 	public static FlickrRestService get() {
-		if(_INSTANCE == null) {
-			_INSTANCE = new FlickrRestService();
+		try {
+		
+			if(_INSTANCE == null) {
+				_INSTANCE = new FlickrRestService();
+			}
+			return _INSTANCE;
 		}
-		return _INSTANCE;
+		catch(FileNotFoundException f) {
+			System.out.println("Could not find config file FlickrAppSecrets.cfg");
+			return null;
+		}
+		catch(IOException e) {
+			System.out.println("FlickrAppSecrets.cfg must contain two lines. First line is your API key, second line is your API secret");
+			return null;			
+		}
 	}
 	
 	private Document getResponse(String method, Map<String, String> params) throws Exception {

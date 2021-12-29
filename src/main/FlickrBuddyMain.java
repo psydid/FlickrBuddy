@@ -47,6 +47,9 @@ public class FlickrBuddyMain {
 
 		
 		service = FlickrRestService.get();
+		if(service == null) {
+			return;
+		}
 		Token accessToken = FlickrBuddyConfig.get().getAccessToken();
 		
 		if(accessToken == null) {

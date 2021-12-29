@@ -1,3 +1,5 @@
+/* Implements a sync for photos */
+
 package main;
 
 
