@@ -12,7 +12,6 @@ import com.dropbox.core.DbxException;
 import com.dropbox.core.DbxRequestConfig;
 import com.dropbox.core.DbxWebAuth;
 import com.dropbox.core.TokenAccessType;
-import com.dropbox.core.json.JsonReader;
 import com.dropbox.core.oauth.DbxCredential;
 import com.dropbox.core.v2.DbxClientV2;
 import com.dropbox.core.v2.files.DbxUserFilesRequests;
@@ -81,18 +80,6 @@ public class DropboxRestService {
         } catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
         }
-	}
-	
-	public String authorizeFromFile(String authFile) {
-		
-		try {
-	        DbxAuthInfo authInfo = DbxAuthInfo.Reader.readFromFile(authFile);
-	        
-	        return authInfo.getAccessToken();
-		}catch (JsonReader.FileLoadException ex) {
-			System.out.println(ex.getMessage());
-			System.exit(1); return null;
-		}
 	}
 	
 
