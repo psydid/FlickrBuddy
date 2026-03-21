@@ -126,7 +126,24 @@ public class FlickrRestService {
 		Node statusNode = doc.getElementsByTagName("rsp").item(0);
 		String status = statusNode.getAttributes().getNamedItem("stat").getNodeValue();
 		if(!status.equals("ok")) {
-			throw new Exception(status.toString());
+			Node errNode = doc.getElementsByTagName("err").item(0);
+			String errorCode = "unknown";
+			String errorMessage = "unknown Flickr error";
+			if(errNode != null && errNode.getAttributes() != null) {
+				Node codeAttr = errNode.getAttributes().getNamedItem("code");
+				Node msgAttr = errNode.getAttributes().getNamedItem("msg");
+				if(codeAttr != null) {
+					errorCode = codeAttr.getNodeValue();
+				}
+				if(msgAttr != null) {
+					errorMessage = msgAttr.getNodeValue();
+				}
+			}
+			throw new Exception(String.format(
+					"Flickr API error: method=%s code=%s message=%s",
+					method,
+					errorCode,
+					errorMessage));
 		}
 		
 		return doc;
@@ -147,7 +164,16 @@ public class FlickrRestService {
 		HashMap<String, String> params = new HashMap<String,String>();
 		params.put("photoset_id", set.getId());
 		
-		Document doc = getResponse("flickr.photosets.getPhotos", params);
+		Document doc;
+		try {
+			doc = getResponse("flickr.photosets.getPhotos", params);
+		} catch (Exception e) {
+			throw new Exception(String.format(
+					"%s photoset_id=%s set_title=%s",
+					e.getMessage(),
+					set.getId(),
+					set.getTitle()), e);
+		}
 		Node collections = doc.getElementsByTagName("photoset").item(0);
 		
 		FlickrPhotoList list = (FlickrPhotoList) unmarshal(collections, FlickrPhotoList.class);

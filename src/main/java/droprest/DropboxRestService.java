@@ -64,9 +64,7 @@ public class DropboxRestService {
 	         );
 	    
 	    credential.refresh(requestConfig);
-	    
-	    System.out.println("credential access token: " + credential.getAccessToken());
-	            
+		            
 		
 		client = new DbxClientV2(requestConfig, credential);
 		
