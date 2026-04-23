@@ -18,6 +18,8 @@ import flickrest.FlickrSet;
 
 public class FlickrBuddyDropboxService extends FlickrBuddySinkService {
 
+	private static final String EMPTY_PATH_COMPONENT = "_";
+
 	//private DropboxRestService service;
 	private DbxUserFilesRequests filesReq;
 	
@@ -66,13 +68,15 @@ public class FlickrBuddyDropboxService extends FlickrBuddySinkService {
 	
 	public boolean checkForCollection(FlickrCollection coll) throws Exception {
 		
-		return getCollectionList().contains(coll.getTitle());
+		return getCollectionList().contains(pathComponentForCollection(coll));
 	}
 	
 	public boolean checkForSet(FlickrCollection coll, FlickrSet set) throws Exception {
+		String collPath = pathComponentForCollection(coll);
+		String setPath = pathComponentForSet(set);
 		
 		// See if the collection exists
-		if(!getCollectionList().contains(coll.getTitle())) {
+		if(!getCollectionList().contains(collPath)) {
 			return false;
 		}
 		
@@ -82,7 +86,7 @@ public class FlickrBuddyDropboxService extends FlickrBuddySinkService {
 			setList = new ArrayList<String>();
 			
 			// Fetch sets from the collection
-			String path = getSinkRoot() + "/" + coll.getTitle(); 
+			String path = getSinkRoot() + "/" + collPath; 
 			
 			ListFolderResult result = filesReq.listFolder(path);
 			List<Metadata> folderList = result.getEntries();
@@ -94,7 +98,7 @@ public class FlickrBuddyDropboxService extends FlickrBuddySinkService {
 			getCollectionSetLists().put(coll.getTitle(), setList);
 		}
 		
-		if(!setList.contains(set.getTitle())) {
+		if(!setList.contains(setPath)) {
 			return false;
 		}
 		
@@ -102,7 +106,7 @@ public class FlickrBuddyDropboxService extends FlickrBuddySinkService {
 		if(!getSetPhotoLists().containsKey(set.getId())) {
 			ArrayList<String> photos = new ArrayList<String>();
 			
-			String path = getSinkRoot() + "/" + coll.getTitle() + "/" + set.getTitle(); 			
+			String path = getSinkRoot() + "/" + collPath + "/" + setPath; 			
 			ListFolderResult result = filesReq.listFolder(path);
 			List<Metadata> photoList = result.getEntries();
 			for(Metadata m : photoList) {
@@ -112,11 +116,11 @@ public class FlickrBuddyDropboxService extends FlickrBuddySinkService {
 			getSetPhotoLists().put(set.getId(), photos);
 		}
 		
-		return setList.contains(set.getTitle());
+		return setList.contains(setPath);
 	}
 	
 	public int countFilesInSet(FlickrCollection coll, FlickrSet set) throws Exception{
-		String path = getSinkRoot() + "/" + coll.getTitle() + "/" + set.getTitle();
+		String path = getSinkRoot() + "/" + pathComponentForCollection(coll) + "/" + pathComponentForSet(set);
 		
 		ListFolderResult result = filesReq.listFolder(path);
 		List<Metadata> fileList = result.getEntries();
@@ -125,11 +129,13 @@ public class FlickrBuddyDropboxService extends FlickrBuddySinkService {
 	
 	
 	protected void writeDirectories(FlickrCollection coll, FlickrSet set, String photoParentPath) throws Exception {
+		String collPath = pathComponentForCollection(coll);
+		String setPath = pathComponentForSet(set);
 	
 		// Create collection folder if necessary
-		if(!getCollectionList().contains(coll.getTitle())) {
-			createCollectionFolder(coll.getTitle());
-			getCollectionList().add(coll.getTitle());
+		if(!getCollectionList().contains(collPath)) {
+			createCollectionFolder(collPath);
+			getCollectionList().add(collPath);
 		}
 		
 		// Create set folder if necessary
@@ -139,9 +145,9 @@ public class FlickrBuddyDropboxService extends FlickrBuddySinkService {
 			getCollectionSetLists().put(coll.getTitle(), collSetList);
 		}
 		
-		if(!collSetList.contains(set.getTitle())) {
-			createSetFolder(coll.getTitle(), set.getTitle());
-			collSetList.add(set.getTitle());
+		if(!collSetList.contains(setPath)) {
+			createSetFolder(collPath, setPath);
+			collSetList.add(setPath);
 		}
 
 	}
@@ -178,5 +184,40 @@ public class FlickrBuddyDropboxService extends FlickrBuddySinkService {
 		filesReq.uploadBuilder(photoPath).withMode(WriteMode.ADD).uploadAndFinish(photoStream);
 		photoStream.close();
 		return true;
+	}
+
+	@Override
+	protected String pathComponentForCollection(FlickrCollection coll) {
+		return sanitizePathComponent(coll.getTitle());
+	}
+
+	@Override
+	protected String pathComponentForSet(FlickrSet set) {
+		return sanitizePathComponent(set.getTitle());
+	}
+
+	@Override
+	protected String fileNameForPhoto(FlickrPhoto photo, String suffix) {
+		return sanitizePathComponent(photo.getTitle()) + suffix;
+	}
+
+	static String sanitizePathComponent(String pathComponent) {
+		if(pathComponent == null) {
+			return EMPTY_PATH_COMPONENT;
+		}
+
+		String sanitized = pathComponent
+				.replace('\\', '-')
+				.replace('/', '-')
+				.replaceAll("[\\p{Cntrl}]+", " ")
+				.replaceAll("\\s+", " ")
+				.trim()
+				.replaceAll("\\.+$", "");
+
+		if(sanitized.isEmpty()) {
+			return EMPTY_PATH_COMPONENT;
+		}
+
+		return sanitized;
 	}
 }

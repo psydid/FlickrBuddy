@@ -25,8 +25,10 @@ public abstract class FlickrBuddySinkService {
 
 		String suffix = source.substring(source.lastIndexOf('.'));
 		
-		String photoParentPath = getSinkRoot()  + "/" + coll.getTitle() + "/" + set.getTitle();
-		String photoName = photo.getTitle() + suffix;
+		String collectionPathComponent = pathComponentForCollection(coll);
+		String setPathComponent = pathComponentForSet(set);
+		String photoParentPath = getSinkRoot()  + "/" + collectionPathComponent + "/" + setPathComponent;
+		String photoName = fileNameForPhoto(photo, suffix);
 		String photoPath = photoParentPath + "/" + photoName;
 
 		writeDirectories(coll, set, photoParentPath);
@@ -41,5 +43,17 @@ public abstract class FlickrBuddySinkService {
 	protected abstract boolean writeFile(FlickrCollection coll, FlickrSet set, String photoName, InputStream photoStream, String fullPath) throws Exception;
 
 	protected abstract void writeDirectories(FlickrCollection coll, FlickrSet set, String photoParentPath) throws Exception;
+
+	protected String pathComponentForCollection(FlickrCollection coll) {
+		return coll.getTitle();
+	}
+
+	protected String pathComponentForSet(FlickrSet set) {
+		return set.getTitle();
+	}
+
+	protected String fileNameForPhoto(FlickrPhoto photo, String suffix) {
+		return photo.getTitle() + suffix;
+	}
 
 }
